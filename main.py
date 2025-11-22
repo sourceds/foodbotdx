@@ -11,6 +11,10 @@ import datetime
 
 # - find a way to clear parameters after a certain amout of time has passed without input
 ############
+
+
+
+
 ### get discord token ###
 dotenv.load_dotenv()
 TOKEN = os.getenv('TOKEN')
@@ -101,7 +105,7 @@ def random_select(params : dict):
 
 ######### Class components #########
 
-class LayoutView(discord.ui.LayoutView):
+class SelectLayoutView(discord.ui.LayoutView):
     def __init__(self, id : int) -> None:
         super().__init__() #pass id
 
@@ -135,7 +139,7 @@ class SelectType(discord.ui.Select):
             last_query_time = datetime.datetime.now()
             ans = random_select({1 : parameter_type, 2 : parameter_location})
             if (ans != -1):
-                await interaction.followup.send(view=LayoutView(ans))
+                await interaction.followup.send(view=SelectLayoutView(ans))
             else:
                 await interaction.followup.send("조건을 만족하는 식당이 없습니다.")
 
@@ -156,7 +160,7 @@ class SelectLocation(discord.ui.Select):
             last_query_time = datetime.datetime.now()
             ans = random_select({1 : parameter_type, 2 : parameter_location})
             if (ans != -1):
-                await interaction.followup.send(view=LayoutView(ans))
+                await interaction.followup.send(view=SelectLayoutView(ans))
             else:
                 await interaction.followup.send("조건을 만족하는 식당이 없습니다.")
 
@@ -168,6 +172,40 @@ class SelectView(discord.ui.View):
         self.add_item(SelectLocation())
 
 
+# About View
+
+class AboutLayoutView(discord.ui.LayoutView):
+    def __init__(self) -> None:
+        super().__init__() #pass id
+
+        title = discord.ui.TextDisplay("## 미식봇 DX")
+        version =  discord.ui.TextDisplay("DX1.0")
+        create1 = discord.ui.TextDisplay("미식봇 DX by srcds")
+        create2 = discord.ui.TextDisplay("미식봇 Origial by @Charlie_Lee_Rhee")
+        #media_source = 'https://img.icons8.com/ios_filled/1200/no-image.jpg' ##TODO : replace later
+
+        #gallery = discord.ui.MediaGallery(discord.MediaGalleryItem(media_source))
+        container = discord.ui.Container(title, version, create1, create2)
+        self.add_item(container)
+
+
+# Help View
+
+class HelpLayoutView(discord.ui.LayoutView):
+    def __init__(self) -> None:
+        super().__init__() #pass id
+
+        title = discord.ui.TextDisplay("## 미식봇 DX 사용방법")
+        cmd1 =  discord.ui.TextDisplay("뭐먹지? : 메뉴와 위치를 정하면 해당 조건에 따라 무작위로 식당을 추천합니다.")
+        cmd2 = discord.ui.TextDisplay("다시! : 입력된 조건으로 다시 식당을 추천합니다.")
+        cmd3 = discord.ui.TextDisplay("술 : 무작위로 술을 마실 수 있는 식당을 추천합니다")
+        #media_source = 'https://img.icons8.com/ios_filled/1200/no-image.jpg' ##TODO : replace later
+
+        #gallery = discord.ui.MediaGallery(discord.MediaGalleryItem(media_source))
+        container = discord.ui.Container(title, cmd1, cmd2, cmd3)
+        self.add_item(container)
+
+
 #############################################
 
 
@@ -176,14 +214,14 @@ class SelectView(discord.ui.View):
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
-@bot.command(name='뭐먹지?')
+@bot.command(name='what', aliases=['뭐먹지?'])
 async def what_to_eat(ctx):
     global parameter_type, parameter_location
     parameter_type = None
     parameter_location = None
     await ctx.send(view=SelectView())
 
-@bot.command(name='다시!')
+@bot.command(name='retry', aliases=['다시', '다시!'])
 async def retry(ctx):
     global parameter_type, parameter_location, last_query_time
     current_query_time = datetime.datetime.now()
@@ -198,13 +236,13 @@ async def retry(ctx):
         if (result == -1):
             await ctx.send("조건을 만족하는 식당이 없습니다.")
         else:
-            await ctx.send(view=LayoutView(result))
+            await ctx.send(view=SelectLayoutView(result))
     
-@bot.command(name='술', alias=['술!'])
+@bot.command(name='alcohol', aliases=['술', '술!'])
 async def alcohol(ctx):
     ans = random_select({5 : 1})
     if (ans != -1):
-        await ctx.send(view=LayoutView(ans))
+        await ctx.send(view=SelectLayoutView(ans))
     else:
         await ctx.send("조건을 만족하는 식당이 없습니다.")
 
@@ -213,7 +251,17 @@ async def test(ctx):
     #await ctx.send(view=LayoutView(random.randint(0, len(data)-1)))
     ans = random_select({1 : '아무거나', 2 : '홍대'})
     if (ans != -1):
-        await ctx.send(view=LayoutView(ans))
+        await ctx.send(view=SelectLayoutView(ans))
     else:
         await ctx.send("조건을 만족하는 식당이 없습니다.")
+
+@bot.command(name='about', aliases=['정보'])
+async def about(ctx):
+    await ctx.send(view=AboutLayoutView())
+
+@bot.command(name='help_menu', aliases=["도와줘"])
+async def help_menu(ctx):
+    await ctx.send(view=HelpLayoutView())
+
+
 bot.run(TOKEN)
