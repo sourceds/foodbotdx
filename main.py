@@ -6,7 +6,11 @@ import csv
 import random
 import datetime
 
-
+## TODO ##
+#
+# - add support for school lunch (menu is at https://sogang.ac.kr/ko/menu-life-info)
+#
+#
 
 
 ### get discord token ###
@@ -288,4 +292,5 @@ async def update_data(ctx):
 @bot.command(name='test', aliases=['테스트'])
 async def test(ctx):
     await ctx.send(view=RecommendationView(179))
+
 bot.run(TOKEN)
