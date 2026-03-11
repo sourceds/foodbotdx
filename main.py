@@ -232,12 +232,13 @@ async def retry(ctx):
     current_query_time = datetime.datetime.now()
     if parameter_type == None and parameter_location == None:
         await ctx.send("뭐먹지? 명령을 먼저 사용해 주세요.")
-    elif ((current_query_time - last_query_time).total_seconds() >= 15.0):
+    elif ((current_query_time - last_query_time).total_seconds() >= 30.0):
         parameter_type = None
         parameter_location = None
+        #reset
     else:
         last_query_time = current_query_time
-        result = legacy_random_select(parameter_type, parameter_location)
+        result = random_select({1 : parameter_type, 2 : parameter_location})
         if (result == -1):
             await ctx.send("조건을 만족하는 식당이 없습니다.")
         else:
@@ -259,8 +260,8 @@ async def about(ctx):
 async def help_menu(ctx):
     await ctx.send(view=HelpLayoutView())
 
-@bot.command(name='load', aliases=['갱신'])
-async def load(ctx):
+@bot.command(name='update_data', aliases=['갱신'])
+async def update_data(ctx):
     await ctx.send("Loading restaurant data...")
     load_data()
     if data is False:
