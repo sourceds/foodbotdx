@@ -4,13 +4,7 @@ import dotenv
 import os
 import csv
 import random
-import threading
 import datetime
-
-### TODO ###
-
-# - find a way to clear parameters after a certain amout of time has passed without input
-############
 
 
 
@@ -21,7 +15,6 @@ TOKEN = os.getenv('TOKEN')
 
 
 ### global variables ###
-
 parameter_type = None #selected food type
 parameter_location = None #selected location
 
@@ -78,11 +71,15 @@ def legacy_random_select(type : str, location : str):
     num = random.randint(0, len(candidates) - 1)
     return candidates[num]
 
+
+# random_select accepts a dictionary that contains the parameters for search
+# the dictionary should be structured like this : {rowID : criteria} (i.e. { 1 : '홍대'})
 def random_select(params : dict):
 
     for key, val in params.items():
         if type(val) == int:
             params[key] = str(val)
+    # change numeric parameters to string type (for comparison later)
         
     candidates = []
     for idx in range(0, len(data)):
@@ -109,68 +106,84 @@ def random_select(params : dict):
 
 ######### Class components #########
 
-class SelectLayoutView(discord.ui.LayoutView):
+class RecommendationView(discord.ui.LayoutView):
     def __init__(self, id : int) -> None:
         super().__init__() #pass id
 
-        title = discord.ui.TextDisplay('# ' + '[' + data[id][0] + ']' + '(' + data[id][8] + ')')
-        type = discord.ui.TextDisplay('메뉴 : ' + data[id][1])
-        location = discord.ui.TextDisplay('위치 : ' + data[id][2])
+        title = discord.ui.TextDisplay('## ' + '[' + data[id][0] + ']' + '(' + data[id][8] + ')')
+        type = discord.ui.TextDisplay('**메뉴** : ' + data[id][1])
+        location = discord.ui.TextDisplay('**위치** : ' + data[id][2])
         detail = discord.ui.TextDisplay('**' + data[id][6] + '**')
 
         if (data[id][9] != ''):
             media_source = data[id][9]
         else:
-            media_source = 'https://img.icons8.com/ios_filled/1200/no-image.jpg' ##TODO : replace later
+            media_source = 'https://raw.githubusercontent.com/sourceds/foodbotdx/refs/heads/main/no_image.jpg'
+            ## pulling images from file looks like a chore, so use online media links for now
 
         gallery = discord.ui.MediaGallery(discord.MediaGalleryItem(media_source))
-        container = discord.ui.Container(title, type, location, detail, gallery)
+        container = discord.ui.Container(title, type, location, detail, gallery, accent_colour = discord.Colour.blurple()) ##added color
+
+        ## note: color can be set by accent_colour = Color (Color is an entire discord module class)
         self.add_item(container)
 
 
+# food type selection
 class SelectType(discord.ui.Select):
+
     def __init__(self):
         options = []
         for type in list_type:
             options.append(discord.SelectOption(label=type, description=type))
         super().__init__(placeholder="음식 분류를 선택해 주세요",max_values=1,min_values=1,options=options)
+
     async def callback(self, interaction: discord.Interaction):
+
         global parameter_type, last_query_time
+
         parameter_type = self.values[0]
+
         await interaction.response.send_message(content=f"{parameter_type}을 선택하셨습니다.")
+
+        # check if both type and location parameters were entered
         if (parameter_type != None and parameter_location != None):
-            #print(f"Both parameters entered : {parameter_type} and {parameter_location}") -> currently here for testing purposes
             last_query_time = datetime.datetime.now()
             ans = random_select({1 : parameter_type, 2 : parameter_location})
             if (ans != -1):
-                await interaction.followup.send(view=SelectLayoutView(ans))
+                await interaction.followup.send(view=RecommendationView(ans))
             else:
                 await interaction.followup.send("조건을 만족하는 식당이 없습니다.")
 
 
 #location selection
 class SelectLocation(discord.ui.Select):
+
     def __init__(self):
         options = []
         for location in list_location:
             options.append(discord.SelectOption(label=location, description=location))
+
         super().__init__(placeholder="식당 위치를 선택해 주세요",max_values=1,min_values=1,options=options)
+
     async def callback(self, interaction: discord.Interaction):
+
         global parameter_location, last_query_time
         parameter_location = self.values[0]
+
         await interaction.response.send_message(content=f"{parameter_location}을 선택하셨습니다.")
+
+        # check if both type and location parameters were entered
         if (parameter_type != None and parameter_location != None):
-            #print(f"Both parameters entered : {parameter_type} and {parameter_location}") -> currently here for testing purposes
             last_query_time = datetime.datetime.now()
             ans = random_select({1 : parameter_type, 2 : parameter_location})
             if (ans != -1):
-                await interaction.followup.send(view=SelectLayoutView(ans))
+                await interaction.followup.send(view=RecommendationView(ans))
             else:
                 await interaction.followup.send("조건을 만족하는 식당이 없습니다.")
 
 # view object for the two select dropdowns
 class SelectView(discord.ui.View):
-    def __init__(self, *, timeout = 180):
+    def __init__(self, *, timeout = 60):
         super().__init__(timeout=timeout)
         self.add_item(SelectType())
         self.add_item(SelectLocation())
@@ -242,13 +255,13 @@ async def retry(ctx):
         if (result == -1):
             await ctx.send("조건을 만족하는 식당이 없습니다.")
         else:
-            await ctx.send(view=SelectLayoutView(result))
+            await ctx.send(view=RecommendationView(result))
     
 @bot.command(name='alcohol', aliases=['술', '술!'])
 async def alcohol(ctx):
     ans = random_select({5 : 1})
     if (ans != -1):
-        await ctx.send(view=SelectLayoutView(ans))
+        await ctx.send(view=RecommendationView(ans))
     else:
         await ctx.send("조건을 만족하는 식당이 없습니다.")
 
@@ -269,4 +282,8 @@ async def update_data(ctx):
     else:
         await ctx.send("Successfully updated restaurant data")
 
+
+@bot.command(name='test', aliases=['테스트'])
+async def test(ctx):
+    await ctx.send(view=RecommendationView(179))
 bot.run(TOKEN)
