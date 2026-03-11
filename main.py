@@ -114,6 +114,8 @@ class RecommendationView(discord.ui.LayoutView):
         type = discord.ui.TextDisplay('**메뉴** : ' + data[id][1])
         location = discord.ui.TextDisplay('**위치** : ' + data[id][2])
         detail = discord.ui.TextDisplay('**' + data[id][6] + '**')
+        
+        info = discord.ui.TextDisplay("-# 이름을 클릭하면 네이버 지도로 이동합니다.")
 
         if (data[id][9] != ''):
             media_source = data[id][9]
@@ -122,7 +124,7 @@ class RecommendationView(discord.ui.LayoutView):
             ## pulling images from file looks like a chore, so use online media links for now
 
         gallery = discord.ui.MediaGallery(discord.MediaGalleryItem(media_source))
-        container = discord.ui.Container(title, type, location, detail, gallery, accent_colour = discord.Colour.blurple()) ##added color
+        container = discord.ui.Container(title, type, location, detail, gallery, info, accent_colour = discord.Colour.blurple()) ##added color
 
         ## note: color can be set by accent_colour = Color (Color is an entire discord module class)
         self.add_item(container)
