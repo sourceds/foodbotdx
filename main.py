@@ -5,6 +5,7 @@ import os
 import csv
 import random
 import datetime
+import sys
 
 ## TODO ##
 #
@@ -287,6 +288,12 @@ async def update_data(ctx):
         await ctx.send("Error: Could not update restaurant data")
     else:
         await ctx.send("Successfully updated restaurant data")
+
+@bot.command(name='restart', aliases=['재시작'])
+async def restart(ctx):
+    await ctx.send("Restarting FoodBot...")
+    os.execv(sys.executable, ['python3'] + sys.argv)
+
 
 
 @bot.command(name='test', aliases=['테스트'])
