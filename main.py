@@ -6,6 +6,7 @@ import csv
 import random
 import datetime
 import sys
+import requests
 
 ## TODO ##
 #
@@ -294,7 +295,12 @@ async def restart(ctx):
     await ctx.send("Restarting FoodBot...")
     os.execv(sys.executable, ['python3'] + sys.argv)
 
-
+@bot.command(name='haksik', aliases=['학식'])
+async def haksik(ctx):
+    res = requests.get("https://sogang.ac.kr/ko/menu-life-info")
+    if res.status_code == 200:
+        await ctx.send("학식 정보입니다.")
+        await ctx.send("학식 정보입니다. 2")
 
 @bot.command(name='test', aliases=['테스트'])
 async def test(ctx):
