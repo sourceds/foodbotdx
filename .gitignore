@@ -2,3 +2,5 @@
 *.csv
 /.vscode
 *.out
+*.json
+*.jpg

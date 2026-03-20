@@ -7,13 +7,15 @@ import random
 import datetime
 import sys
 import requests
+import json
+
+import convert_date #convert_date.py
 
 ## TODO ##
 #
 # - add support for school lunch (menu is at https://sogang.ac.kr/ko/menu-life-info)
 #
 #
-
 
 ### get discord token ###
 dotenv.load_dotenv()
@@ -42,12 +44,20 @@ bot = commands.Bot(command_prefix=prefix, intents=discord.Intents.all())
 ### setup data ###
 
 def load_data():
-    global data, file_name
     file_name = os.getenv('DATA')
     with open(file_name, mode='r') as file:
-        data = list(csv.reader(file, delimiter=','))
+        file_data = list(csv.reader(file, delimiter=','))
+    return file_data
 
-load_data()
+data = load_data()
+
+def load_menu():
+    file_name = os.getenv('MENU')
+    with open(file_name, mode='r', encoding='utf-8') as file:
+        file_data = json.load(file)
+    return file_data
+
+menu = load_menu()
 
 # random restaurant selection
 # TODO
@@ -247,6 +257,7 @@ async def what_to_eat(ctx):
     parameter_location = None
     await ctx.send(view=SelectView())
 
+
 @bot.command(name='retry', aliases=['다시', '다시!'])
 async def retry(ctx):
     global parameter_type, parameter_location, last_query_time
@@ -265,6 +276,7 @@ async def retry(ctx):
         else:
             await ctx.send(view=RecommendationView(result))
     
+
 @bot.command(name='alcohol', aliases=['술', '술!'])
 async def alcohol(ctx):
     ans = random_select({5 : 1})
@@ -273,13 +285,47 @@ async def alcohol(ctx):
     else:
         await ctx.send("조건을 만족하는 식당이 없습니다.")
 
+
 @bot.command(name='about', aliases=['정보'])
 async def about(ctx):
     await ctx.send(view=AboutLayoutView())
 
+
 @bot.command(name='help_menu', aliases=["도와줘"])
 async def help_menu(ctx):
     await ctx.send(view=HelpLayoutView())
+
+@bot.command(name='haksik', aliases=["학식"])
+async def haksik(ctx):
+    cur_date = datetime.date.today()
+    #cur_date = datetime.date.today() + datetime.timedelta(days=1) #testing for weekend cases
+    cur_date_index = cur_date.isoweekday() - 1
+    cur_api_date = convert_date.to_api_date(cur_date)
+
+    try:
+        if (cur_date_index > 4):
+            await ctx.send("오늘의 학식 정보가 없습니다.")
+        else:
+            breakfast = menu["data"]["menuList"][cur_date_index]["menuInfo"][0]
+            katsu = menu["data"]["menuList"][cur_date_index]["menuInfo"][1]
+            special = menu["data"]["menuList"][cur_date_index]["menuInfo"][2]
+            ramen = menu["data"]["menuList"][cur_date_index]["menuInfo"][3]
+            korean = menu["data"]["menuList"][cur_date_index]["menuInfo"][4]
+            
+            menu_combied = '**<' + breakfast["category"] + '>**' + '\n' + breakfast["menu"].replace("<br>", "") + '\n'
+            menu_combied += '**<' + katsu["category"] + '>**' + '\n' + katsu["menu"].replace("<br>", "") + '\n'
+            menu_combied += '**<' + special["category"] + '>**' + '\n' + special["menu"].replace("<br>", "") + '\n'
+            menu_combied += '**<' + ramen["category"] + '>**' + '\n' + ramen["menu"].replace("<br>", "") + '\n'
+            menu_combied += '**<' + korean["category"] + '>**' + '\n' + korean["menu"].replace("<br>", "")
+
+            #TODO: show information as discord embed instead of plaintext message
+            print(menu_combied)
+            await ctx.send(menu_combied)
+
+    except (KeyError):
+        await ctx.send("내부 오류가 발생했습니다. (KeyError)")
+
+### Utility Functions ###
 
 @bot.command(name='update_data', aliases=['갱신'])
 async def update_data(ctx):
@@ -290,20 +336,16 @@ async def update_data(ctx):
     else:
         await ctx.send("Successfully updated restaurant data")
 
+
 @bot.command(name='restart', aliases=['재시작'])
 async def restart(ctx):
     await ctx.send("Restarting FoodBot...")
     os.execv(sys.executable, ['python3'] + sys.argv)
 
-@bot.command(name='haksik', aliases=['학식'])
-async def haksik(ctx):
-    res = requests.get("https://sogang.ac.kr/ko/menu-life-info")
-    if res.status_code == 200:
-        await ctx.send("학식 정보입니다.")
-        await ctx.send("학식 정보입니다. 2")
 
 @bot.command(name='test', aliases=['테스트'])
 async def test(ctx):
     await ctx.send(view=RecommendationView(179))
+
 
 bot.run(TOKEN)
