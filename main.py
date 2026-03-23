@@ -145,6 +145,40 @@ class RecommendationView(discord.ui.LayoutView):
         ## note: color can be set by accent_colour = Color (Color is an entire discord module class)
         self.add_item(container)
 
+#Haksik Menu Layout
+
+class HaksikView(discord.ui.LayoutView):
+    def __init__(self, cur_date : datetime) -> None:
+        super().__init__() #pass id
+
+        cur_date_index = cur_date.isoweekday() - 1
+        diff = cur_date.isoweekday() #get current week of day as integer
+
+        week_start = cur_date - datetime.timedelta(days=diff - 1) #get start day of the week (Monday)
+        week_end = week_start + datetime.timedelta(days=5) #get end day of the week (Friday)
+
+        str_start_date = convert_date.to_api_date(week_start)
+        str_end_date = convert_date.to_api_date(week_end)
+
+        def validate_string(input : str) -> str:
+            output = input
+            output = output.replace("<br>", "")
+            output = output.replace("*", "")
+            return output
+    
+        menu_info = menu["data"]["menuList"][cur_date_index]["menuInfo"]
+            
+        menustr = ""
+        for idx in range(0, 5):
+            menustr += '### ' + '<' + menu_info[idx]["category"] + '>' + '\n' + validate_string(menu_info[idx]["menu"]) + '\n'
+
+        title = discord.ui.TextDisplay("# 베르크만스 우정원 (BW관) 식당 메뉴")
+        date_range = discord.ui.TextDisplay("## " + str_start_date + " ~ " + str_end_date)
+        data = discord.ui.TextDisplay(menustr)
+
+        container = discord.ui.Container(title, date_range, data, accent_colour = discord.Colour.from_rgb(175, 39, 47)) #set color to cardinal red
+        self.add_item(container)
+
 
 # food type selection
 class SelectType(discord.ui.Select):
@@ -244,7 +278,7 @@ class HelpLayoutView(discord.ui.LayoutView):
 
 @bot.event
 async def on_ready():
-    print(f'{bot.user.name} has connected to Discord!')
+    print(f'{bot.user.name} has connected to Discord!') # type: ignore
 
 @bot.command(name='hi', aliases=["ㅎㅇ", "안녕"])
 async def hi(ctx):
@@ -298,29 +332,13 @@ async def help_menu(ctx):
 @bot.command(name='haksik', aliases=["학식"])
 async def haksik(ctx):
     cur_date = datetime.date.today()
-    #cur_date = datetime.date.today() + datetime.timedelta(days=1) #testing for weekend cases
     cur_date_index = cur_date.isoweekday() - 1
-    cur_api_date = convert_date.to_api_date(cur_date)
 
     try:
         if (cur_date_index > 4):
             await ctx.send("오늘의 학식 정보가 없습니다.")
         else:
-            breakfast = menu["data"]["menuList"][cur_date_index]["menuInfo"][0]
-            katsu = menu["data"]["menuList"][cur_date_index]["menuInfo"][1]
-            special = menu["data"]["menuList"][cur_date_index]["menuInfo"][2]
-            ramen = menu["data"]["menuList"][cur_date_index]["menuInfo"][3]
-            korean = menu["data"]["menuList"][cur_date_index]["menuInfo"][4]
-            
-            menu_combied = '**<' + breakfast["category"] + '>**' + '\n' + breakfast["menu"].replace("<br>", "") + '\n'
-            menu_combied += '**<' + katsu["category"] + '>**' + '\n' + katsu["menu"].replace("<br>", "") + '\n'
-            menu_combied += '**<' + special["category"] + '>**' + '\n' + special["menu"].replace("<br>", "") + '\n'
-            menu_combied += '**<' + ramen["category"] + '>**' + '\n' + ramen["menu"].replace("<br>", "") + '\n'
-            menu_combied += '**<' + korean["category"] + '>**' + '\n' + korean["menu"].replace("<br>", "")
-
-            #TODO: show information as discord embed instead of plaintext message
-            print(menu_combied)
-            await ctx.send(menu_combied)
+            await ctx.send(view=HaksikView(cur_date))
 
     except (KeyError):
         await ctx.send("내부 오류가 발생했습니다. (KeyError)")
@@ -346,6 +364,5 @@ async def restart(ctx):
 @bot.command(name='test', aliases=['테스트'])
 async def test(ctx):
     await ctx.send(view=RecommendationView(179))
-
 
 bot.run(TOKEN)
