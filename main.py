@@ -6,21 +6,13 @@ import csv
 import random
 import datetime
 import sys
-import requests
 import json
 
 import convert_date #convert_date.py
 
-## TODO ##
-#
-# - add support for school lunch (menu is at https://sogang.ac.kr/ko/menu-life-info)
-#
-#
-
 ### get discord token ###
 dotenv.load_dotenv()
 TOKEN = os.getenv('TOKEN')
-
 
 ### global variables ###
 parameter_type = None #selected food type
@@ -152,14 +144,6 @@ class HaksikView(discord.ui.LayoutView):
         super().__init__() #pass id
 
         cur_date_index = cur_date.isoweekday() - 1
-        diff = cur_date.isoweekday() #get current week of day as integer
-
-        week_start = cur_date - datetime.timedelta(days=diff - 1) #get start day of the week (Monday)
-        week_end = week_start + datetime.timedelta(days=5) #get end day of the week (Friday)
-
-        str_start_date = convert_date.to_api_date(week_start)
-        str_end_date = convert_date.to_api_date(week_end)
-
         def validate_string(input : str) -> str:
             output = input
             output = output.replace("<br>", "")
@@ -173,7 +157,7 @@ class HaksikView(discord.ui.LayoutView):
             menustr += '### ' + '<' + menu_info[idx]["category"] + '>' + '\n' + validate_string(menu_info[idx]["menu"]) + '\n'
 
         title = discord.ui.TextDisplay("# 베르크만스 우정원 (BW관) 식당 메뉴")
-        date_range = discord.ui.TextDisplay("## " + str_start_date + " ~ " + str_end_date)
+        date_range = discord.ui.TextDisplay("## " + convert_date.to_api_date(cur_date))
         data = discord.ui.TextDisplay(menustr)
 
         container = discord.ui.Container(title, date_range, data, accent_colour = discord.Colour.from_rgb(175, 39, 47)) #set color to cardinal red
@@ -265,9 +249,6 @@ class HelpLayoutView(discord.ui.LayoutView):
         cmd1 =  discord.ui.TextDisplay("뭐먹지? : 메뉴와 위치를 정하면 해당 조건에 따라 무작위로 식당을 추천합니다.")
         cmd2 = discord.ui.TextDisplay("다시! : 입력된 조건으로 다시 식당을 추천합니다.")
         cmd3 = discord.ui.TextDisplay("술 : 무작위로 술을 마실 수 있는 식당을 추천합니다")
-        #media_source = 'https://img.icons8.com/ios_filled/1200/no-image.jpg' ##TODO : replace later
-
-        #gallery = discord.ui.MediaGallery(discord.MediaGalleryItem(media_source))
         container = discord.ui.Container(title, cmd1, cmd2, cmd3)
         self.add_item(container)
 
@@ -319,6 +300,21 @@ async def alcohol(ctx):
     else:
         await ctx.send("조건을 만족하는 식당이 없습니다.")
 
+@bot.command(name='sogang', aliases=['서강', '서강!'])
+async def sogang(ctx):
+    ans = random_select({2 : '서강'})
+    if (ans != -1):
+        await ctx.send(view=RecommendationView(ans))
+    else:
+        await ctx.send("조건을 만족하는 식당이 없습니다.")
+
+@bot.command(name='hongdae', aliases=['홍대', '홍대!'])
+async def hongdae(ctx):
+    ans = random_select({2 : '홍대'})
+    if (ans != -1):
+        await ctx.send(view=RecommendationView(ans))
+    else:
+        await ctx.send("조건을 만족하는 식당이 없습니다.")
 
 @bot.command(name='about', aliases=['정보'])
 async def about(ctx):
@@ -342,6 +338,9 @@ async def haksik(ctx):
 
     except (KeyError):
         await ctx.send("내부 오류가 발생했습니다. (KeyError)")
+
+
+##TODO : get menu from before-it-melts notion
 
 ### Utility Functions ###
 
