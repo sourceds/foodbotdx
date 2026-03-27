@@ -13,7 +13,7 @@ import convert_date #convert_date.py
 ### get discord token ###
 dotenv.load_dotenv()
 TOKEN = os.getenv('TOKEN')
-
+ADMIN_USERS = os.getenv('ADMIN_USER_IDS').split(',')
 ### global variables ###
 parameter_type = None #selected food type
 parameter_location = None #selected location
@@ -249,7 +249,8 @@ class HelpLayoutView(discord.ui.LayoutView):
         cmd1 =  discord.ui.TextDisplay("뭐먹지? : 메뉴와 위치를 정하면 해당 조건에 따라 무작위로 식당을 추천합니다.")
         cmd2 = discord.ui.TextDisplay("다시! : 입력된 조건으로 다시 식당을 추천합니다.")
         cmd3 = discord.ui.TextDisplay("술 : 무작위로 술을 마실 수 있는 식당을 추천합니다")
-        container = discord.ui.Container(title, cmd1, cmd2, cmd3)
+        cmd4 = discord.ui.TextDisplay("학식 : 오늘의 베르크만스 우정원(BW관) 메뉴를 표시합니다.")
+        container = discord.ui.Container(title, cmd1, cmd2, cmd3, cmd4)
         self.add_item(container)
 
 
@@ -356,8 +357,11 @@ async def update_data(ctx):
 
 @bot.command(name='restart', aliases=['재시작'])
 async def restart(ctx):
-    await ctx.send("Restarting FoodBot...")
-    os.execv(sys.executable, ['python3'] + sys.argv)
+    if str(ctx.author.id) in ADMIN_USERS:
+        await ctx.send("Restarting FoodBot...")
+        os.execv(sys.executable, ['python3'] + sys.argv)
+    else:
+        await ctx.send("권한이 없습니다.")
 
 
 @bot.command(name='test', aliases=['테스트'])
