@@ -31,3 +31,5 @@ response = requests.post(url, json=payload)
 
 with open("menu.json", "w") as file:
     json.dump(response.json(), file, ensure_ascii=False, indent=4)
+
+file.close()

@@ -39,6 +39,7 @@ def load_data():
     file_name = os.getenv('DATA')
     with open(file_name, mode='r') as file:
         file_data = list(csv.reader(file, delimiter=','))
+    file.close()
     return file_data
 
 data = load_data()
@@ -47,6 +48,7 @@ def load_menu():
     file_name = os.getenv('MENU')
     with open(file_name, mode='r', encoding='utf-8') as file:
         file_data = json.load(file)
+    file.close()
     return file_data
 
 menu = load_menu()
@@ -266,7 +268,7 @@ async def on_ready():
 async def hi(ctx):
     await ctx.send("안뇽!")
 
-@bot.command(name='what', aliases=['뭐먹지?'])
+@bot.command(name='what', aliases=['뭐먹지?, 뭐먹지!, 뭐먹지'])
 async def what_to_eat(ctx):
     global parameter_type, parameter_location
     parameter_type = None
@@ -301,6 +303,9 @@ async def alcohol(ctx):
     else:
         await ctx.send("조건을 만족하는 식당이 없습니다.")
 
+
+## region-based search ##
+
 @bot.command(name='sogang', aliases=['서강', '서강!'])
 async def sogang(ctx):
     ans = random_select({2 : '서강'})
@@ -317,14 +322,49 @@ async def hongdae(ctx):
     else:
         await ctx.send("조건을 만족하는 식당이 없습니다.")
 
-@bot.command(name='about', aliases=['정보'])
-async def about(ctx):
-    await ctx.send(view=AboutLayoutView())
+@bot.command(name='sinchon', aliases=['신촌', '신촌!'])
+async def sinchon(ctx):
+    ans = random_select({2 : '신촌'})
+    if (ans != -1):
+        await ctx.send(view=RecommendationView(ans))
+    else:
+        await ctx.send("조건을 만족하는 식당이 없습니다.")
 
 
-@bot.command(name='help_menu', aliases=["도와줘"])
-async def help_menu(ctx):
-    await ctx.send(view=HelpLayoutView())
+## menu-based search ##
+
+@bot.command(name='japanese', aliases=['일식', '일식!'])
+async def japanese(ctx):
+    ans = random_select({1 : '일식'})
+    if (ans != -1):
+        await ctx.send(view=RecommendationView(ans))
+    else:
+        await ctx.send("조건을 만족하는 식당이 없습니다.")
+
+@bot.command(name='korean', aliases=['한식', '한식!'])
+async def korean(ctx):
+    ans = random_select({1 : '한식'})
+    if (ans != -1):
+        await ctx.send(view=RecommendationView(ans))
+    else:
+        await ctx.send("조건을 만족하는 식당이 없습니다.")
+
+@bot.command(name='chinese', aliases=['중식', '중식!'])
+async def chinese(ctx):
+    ans = random_select({1 : '중식'})
+    if (ans != -1):
+        await ctx.send(view=RecommendationView(ans))
+    else:
+        await ctx.send("조건을 만족하는 식당이 없습니다.")
+
+@bot.command(name='western', aliases=['양식', '양식!'])
+async def western(ctx):
+    ans = random_select({1 : '양식'})
+    if (ans != -1):
+        await ctx.send(view=RecommendationView(ans))
+    else:
+        await ctx.send("조건을 만족하는 식당이 없습니다.")
+
 
 @bot.command(name='haksik', aliases=["학식"])
 async def haksik(ctx):
@@ -339,6 +379,18 @@ async def haksik(ctx):
 
     except (KeyError):
         await ctx.send("내부 오류가 발생했습니다. (KeyError)")
+
+
+## Help commands ##
+
+@bot.command(name='about', aliases=['정보'])
+async def about(ctx):
+    await ctx.send(view=AboutLayoutView())
+
+
+@bot.command(name='help_menu', aliases=["도와줘"])
+async def help_menu(ctx):
+    await ctx.send(view=HelpLayoutView())
 
 
 ##TODO : get menu from before-it-melts notion
@@ -362,10 +414,5 @@ async def restart(ctx):
         os.execv(sys.executable, ['python3'] + sys.argv)
     else:
         await ctx.send("권한이 없습니다.")
-
-
-@bot.command(name='test', aliases=['테스트'])
-async def test(ctx):
-    await ctx.send(view=RecommendationView(179))
 
 bot.run(TOKEN)
