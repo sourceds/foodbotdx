@@ -18,6 +18,19 @@ ADMIN_USERS = os.getenv('ADMIN_USER_IDS').split(',')
 parameter_type = None #selected food type
 parameter_location = None #selected location
 
+### CSV INDEX ###
+NAME_IDX = 0
+CLASS_IDX = 1
+LOCATION_IDX = 2
+MENU_IDX = 3
+ALCOHOL_IDX = 5
+DESC_IDX = 6
+FAV_IDX = 7
+MAP_IDX = 8
+IMAGE_IDX = 9
+
+# Indexes for standard foodbot operation (change as needed)
+
 any_type = '아무거나'
 any_location = '아무데나'
 list_type = [any_type, '한식', '중식', '일식', '양식', '간식', '기타']
@@ -96,9 +109,9 @@ def random_select(params : dict):
         row = data[idx]
         flag = True
         for key, val in params.items():
-            if key == 1 and val == any_type:
+            if key == CLASS_IDX and val == any_type:
                 continue
-            elif key == 2 and val == any_location:
+            elif key == LOCATION_IDX and val == any_location:
                 continue
             else:
                 if row[key] == val:
@@ -119,22 +132,29 @@ def random_select(params : dict):
 class RecommendationView(discord.ui.LayoutView):
     def __init__(self, id : int) -> None:
         super().__init__() #pass id
-
-        title = discord.ui.TextDisplay('## ' + '[' + data[id][0] + ']' + '(' + data[id][8] + ')')
-        type = discord.ui.TextDisplay('**메뉴** : ' + data[id][1])
-        location = discord.ui.TextDisplay('**위치** : ' + data[id][2])
+        title = discord.ui.TextDisplay('## ' + '[' + data[id][NAME_IDX] + ']' + '(' + data[id][MAP_IDX] + ')')
+        type = discord.ui.TextDisplay('**메뉴** : ' + data[id][CLASS_IDX] + ' (' + data[id][MENU_IDX] + ')')
+        location = discord.ui.TextDisplay('**위치** : ' + data[id][LOCATION_IDX])
         detail = discord.ui.TextDisplay('**' + data[id][6] + '**')
-        
-        info = discord.ui.TextDisplay("-# 이름을 클릭하면 네이버 지도로 이동합니다.")
+
 
         if (data[id][9] != ''):
-            media_source = data[id][9]
+            media_source = data[id][IMAGE_IDX]
         else:
             media_source = 'https://raw.githubusercontent.com/sourceds/foodbotdx/refs/heads/main/no_image.jpg'
             ## pulling images from file looks like a chore, so use online media links for now
 
         gallery = discord.ui.MediaGallery(discord.MediaGalleryItem(media_source))
-        container = discord.ui.Container(title, type, location, detail, gallery, info, accent_colour = discord.Colour.blurple()) ##added color
+
+        info = discord.ui.TextDisplay("-# 이름을 클릭하면 네이버 지도로 이동합니다.")
+
+        favstr = data[id][FAV_IDX]
+        if favstr != "":
+            favorite = discord.ui.TextDisplay(favstr + "님이 이 식당을 좋아합니다!")
+            container = discord.ui.Container(title, type, location, detail, favorite, gallery, info, accent_colour = discord.Colour.blurple())
+        else:
+            container = discord.ui.Container(title, type, location, detail, gallery, info, accent_colour = discord.Colour.blurple())
+        
 
         ## note: color can be set by accent_colour = Color (Color is an entire discord module class)
         self.add_item(container)
