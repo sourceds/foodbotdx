@@ -233,11 +233,12 @@ class AboutLayoutView(discord.ui.LayoutView):
     def __init__(self) -> None:
         super().__init__() #pass id
 
-        title = discord.ui.TextDisplay("## 미식봇 DX")
-        version =  discord.ui.TextDisplay("DX1.0")
-        create1 = discord.ui.TextDisplay("미식봇 DX by srcds")
-        create2 = discord.ui.TextDisplay("미식봇 Origial by @Charlie_Lee_Rhee")
-        container = discord.ui.Container(title, version, create1, create2)
+        title = discord.ui.TextDisplay("# 미식봇 DX")
+        help = discord.ui.TextDisplay('### 사용법 문의는 "도와줘" 명령을 사용해 주세요!')
+        version =  discord.ui.TextDisplay("version 0.1.1 (2026-03)")
+        create1 = discord.ui.TextDisplay("미식봇 DX 운영 및 관리: srcds @sourceds")
+        create2 = discord.ui.TextDisplay("미식봇 Origial: @Charlie_Lee_Rhee (@Charlie_Lee_Rhee)")
+        container = discord.ui.Container(title, help, version, create1, create2)
         self.add_item(container)
 
 
@@ -247,13 +248,23 @@ class HelpLayoutView(discord.ui.LayoutView):
     def __init__(self) -> None:
         super().__init__() #pass id
 
-        title = discord.ui.TextDisplay("## 미식봇 DX 사용방법")
-        cmd1 =  discord.ui.TextDisplay("뭐먹지? : 메뉴와 위치를 정하면 해당 조건에 따라 무작위로 식당을 추천합니다.")
+        title = discord.ui.TextDisplay("# 미식봇 사용방법")
+        header1 = discord.ui.TextDisplay("## 기본 검색")
+        cmd1 =  discord.ui.TextDisplay("뭐먹지? : 메뉴와 위치를 입력하면 해당 조건에 따라 무작위로 식당을 추천합니다.")
         cmd2 = discord.ui.TextDisplay("다시! : 입력된 조건으로 다시 식당을 추천합니다.")
-        cmd3 = discord.ui.TextDisplay("술 : 무작위로 술을 마실 수 있는 식당을 추천합니다")
-        cmd4 = discord.ui.TextDisplay("학식 : 오늘의 베르크만스 우정원(BW관) 메뉴를 표시합니다.")
-        container = discord.ui.Container(title, cmd1, cmd2, cmd3, cmd4)
+        header2 = discord.ui.TextDisplay("## 상세 검색")
+        cmd3 = discord.ui.TextDisplay("술 : 술을 마실 수 있는 식당을 추천합니다")
+        cmd4 = discord.ui.TextDisplay("[메뉴]/[지역] : 원하는 지역의 식당이나 메뉴에 따라 빠르게 검색할 수 있습니다.")
+        cmd5 = discord.ui.TextDisplay("학식 : 오늘의 베르크만스 우정원(BW관) 메뉴를 표시합니다.")
+        header3 = discord.ui.TextDisplay("## 유틸리티 (Admin Only)")
+        cmd6 = discord.ui.TextDisplay("재시작 : 현재 미식봇 Instance를 재시작합니다.")
+        cmd7 = discord.ui.TextDisplay("갱신 : 데이터를 다시 로드합니다.")
+        cmd8 = discord.ui.TextDisplay('### ' + '[' + "GitHub 리포지토리" + ']' + '(' + 'https://github.com/sourceds/foodbotdx' + ')')
+        container = discord.ui.Container(title, header1, cmd1, cmd2, header2, cmd3, cmd4, cmd5, header3, cmd6, cmd7, cmd8)
         self.add_item(container)
+        
+
+        
 
 
 #############################################
