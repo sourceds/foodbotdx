@@ -299,7 +299,7 @@ async def on_ready():
 async def hi(ctx):
     await ctx.send("안뇽!")
 
-@bot.command(name='what', aliases=['뭐먹지?, 뭐먹지!, 뭐먹지'])
+@bot.command(name='what', aliases=['뭐먹지?', '뭐먹지!', '뭐먹지'])
 async def what_to_eat(ctx):
     global parameter_type, parameter_location
     parameter_type = None
