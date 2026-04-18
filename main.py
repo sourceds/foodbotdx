@@ -423,6 +423,17 @@ async def about(ctx):
 async def help_menu(ctx):
     await ctx.send(view=HelpLayoutView())
 
+@bot.command(name='index_search', aliases=['인덱스'])
+async def index_search(ctx, arg):
+    print(f"{arg}, {arg.isdigit()}, {int(arg)}")
+    if (arg.isdigit()):
+        idx = int(arg)
+        if (idx >= len(data) or idx < 1):
+            await ctx.send("해당 정보가 존재하지 않습니다. (범위 : 1 ~ " + str(len(data)) + ")")
+        else:
+            await ctx.send(view=RecommendationView(idx))
+    else:
+        await ctx.send("입력은 1 이상의 정수여야 합니다.")
 
 ##TODO : get menu from before-it-melts notion
 
