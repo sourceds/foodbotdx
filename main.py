@@ -9,6 +9,7 @@ import sys
 import json
 
 import convert_date #convert_date.py
+import get_data #get_data.py
 
 ### get discord token ###
 dotenv.load_dotenv()
@@ -431,7 +432,7 @@ async def index_search(ctx, arg):
         await ctx.send("입력은 1 이상의 정수여야 합니다.")
     else:
         if (idx >= len(data) or idx < 1):
-            await ctx.send("해당 정보가 존재하지 않습니다. (범위 : 1 ~ " + str(len(data)) + ")")
+            await ctx.send("해당 정보가 존재하지 않습니다. (범위 : 1 ~ " + str(len(data)-1) + ")")
         else:
             await ctx.send(view=RecommendationView(idx))
 
@@ -441,12 +442,24 @@ async def index_search(ctx, arg):
 
 @bot.command(name='update_data', aliases=['갱신'])
 async def update_data(ctx):
-    await ctx.send("Loading restaurant data...")
-    load_data()
-    if data is False:
-        await ctx.send("Error: Could not update restaurant data")
-    else:
-        await ctx.send("Successfully updated restaurant data")
+    await ctx.send("Getting data from URL source [1/2]")
+    return_val = get_data.from_source_url()
+    match(return_val):
+        case 0:
+            await ctx.send("Saving data to storage [2/2]")
+            load_data()
+            if data is False:
+                await ctx.send("Error 4: File Read Error")
+            else:
+                await ctx.send("Successfully updated data")
+        case 1:
+            await ctx.send("Error 1: Invalid HTTP response")
+        case 2:
+            await ctx.send("Error 2: File Access Error")
+        case 3:
+            await ctx.send("Error 3: File Write Error")
+        case _:
+            await ctx.send("An unknown error occured.")
 
 
 @bot.command(name='restart', aliases=['재시작'])
