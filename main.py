@@ -136,10 +136,10 @@ class RecommendationView(discord.ui.LayoutView):
         title = discord.ui.TextDisplay('## ' + '[' + data[id][NAME_IDX] + ']' + '(' + data[id][MAP_IDX] + ')')
         type = discord.ui.TextDisplay('**메뉴** : ' + data[id][CLASS_IDX] + ' (' + data[id][MENU_IDX] + ')')
         location = discord.ui.TextDisplay('**위치** : ' + data[id][LOCATION_IDX])
-        detail = discord.ui.TextDisplay('**' + data[id][6] + '**')
+        detail = discord.ui.TextDisplay('**' + data[id][DESC_IDX] + '**')
 
 
-        if (data[id][9] != ''):
+        if (data[id][IMAGE_IDX] != ''):
             media_source = data[id][IMAGE_IDX]
         else:
             media_source = 'https://raw.githubusercontent.com/sourceds/foodbotdx/refs/heads/main/no_image.jpg'
