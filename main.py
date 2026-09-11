@@ -15,6 +15,10 @@ import get_data #get_data.py
 dotenv.load_dotenv()
 TOKEN = os.getenv('TOKEN')
 ADMIN_USERS = os.getenv('ADMIN_USER_IDS').split(',')
+about_manager=os.getenv('ABOUT_MANAGER')
+about_creator=os.getenv('ABOUT_CREATOR')
+about_data=os.getenv('ABOUT_DATA')
+
 ### global variables ###
 parameter_type = None #selected food type
 parameter_location = None #selected location
@@ -149,12 +153,13 @@ class RecommendationView(discord.ui.LayoutView):
 
         info = discord.ui.TextDisplay("-# 이름을 클릭하면 네이버 지도로 이동합니다.")
 
-        favstr = data[id][FAV_IDX]
-        if favstr != "":
-            favorite = discord.ui.TextDisplay(favstr + "님이 이 식당을 좋아합니다!")
-            container = discord.ui.Container(title, type, location, detail, favorite, gallery, info, accent_colour = discord.Colour.blurple())
-        else:
-            container = discord.ui.Container(title, type, location, detail, gallery, info, accent_colour = discord.Colour.blurple())
+        # deprecated favstr (favorites)
+        #favstr = data[id][FAV_IDX]
+        #if favstr != "":
+        #    favorite = discord.ui.TextDisplay(favstr + "님이 이 식당을 좋아합니다!")
+        #    container = discord.ui.Container(title, type, location, detail, favorite, gallery, info, accent_colour = discord.Colour.blurple())
+        #else:
+        container = discord.ui.Container(title, type, location, detail, gallery, info, accent_colour = discord.Colour.blurple())
         
 
         ## note: color can be set by accent_colour = Color (Color is an entire discord module class)
@@ -256,10 +261,11 @@ class AboutLayoutView(discord.ui.LayoutView):
 
         title = discord.ui.TextDisplay("# 미식봇 DX")
         help = discord.ui.TextDisplay('### 사용법 문의는 "도와줘" 명령을 사용해 주세요!')
-        version =  discord.ui.TextDisplay("version 0.1.1 (2026-03)")
-        create1 = discord.ui.TextDisplay("미식봇 DX 운영 및 관리: srcds @sourceds")
-        create2 = discord.ui.TextDisplay("미식봇 Origial: @Charlie_Lee_Rhee (@Charlie_Lee_Rhee)")
-        container = discord.ui.Container(title, help, version, create1, create2)
+        version =  discord.ui.TextDisplay("version 0.1.2 (2026-09)")
+        manage = discord.ui.TextDisplay(about_manager)
+        create = discord.ui.TextDisplay(about_creator)
+        dataset = discord.ui.TextDisplay(about_data)
+        container = discord.ui.Container(title, help, version, manage, create, dataset)
         self.add_item(container)
 
 
