@@ -448,12 +448,13 @@ async def index_search(ctx, arg):
 
 @bot.command(name='update_data', aliases=['갱신'])
 async def update_data(ctx):
+    global data
     await ctx.send("Getting data from URL source [1/2]")
     return_val = get_data.from_source_url()
     match(return_val):
         case 0:
             await ctx.send("Saving data to storage [2/2]")
-            load_data()
+            data = load_data()
             if data is False:
                 await ctx.send("Error 4: File Read Error")
             else:
